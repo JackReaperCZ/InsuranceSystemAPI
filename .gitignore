@@ -1,0 +1,44 @@
+# Build outputs
+bin/
+obj/
+
+# IDEs and tooling
+.vs/
+.vscode/
+.idea/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs and temp
+*.log
+logs/
+**/Properties/launchSettings.json
+
+# Dotnet tooling
+.dotnet/
+.nuget/
+packages/
+
+# Rider caches
+.Rider*
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Test results
+TestResults/
+*.coverage
+*.coveragexml
+
+# Publish artifacts
+**/wwwroot/lib/
+**/publish/
+
+# OS junk
+Thumbs.db
+.DS_Store
