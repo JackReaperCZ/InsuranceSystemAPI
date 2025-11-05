@@ -254,11 +254,19 @@ namespace InsuranceSystemAPI.Controllers
                     InsuredPersonName = $"{pojistenec.FirstName} {pojistenec.LastName}",
                     ManagerId = s.ManagerId,
                     ManagerName = s.Manager != null ? $"{s.Manager.FirstName} {s.Manager.LastName}" : null,
-                    IsValid = DateTime.Now >= s.ValidFrom && DateTime.Now <= s.ValidTo && s.Status == ContractStatus.Active,
-                    DaysToExpiry = (s.ValidTo - DateTime.Now).Days,
+                    // Compute-only fields set post-query to avoid provider translation issues
+                    IsValid = false,
+                    DaysToExpiry = 0,
                     ClaimCount = s.InsuranceClaims.Count
                 })
                 .ToListAsync();
+
+            // Compute fields client-side to avoid translation limitations in MySQL provider
+            foreach (var c in smlouvy)
+            {
+                c.IsValid = DateTime.Now >= c.ValidFrom && DateTime.Now <= c.ValidTo && c.Status == ContractStatus.Active;
+                c.DaysToExpiry = (c.ValidTo - DateTime.Now).Days;
+            }
 
             return Ok(smlouvy);
         }
