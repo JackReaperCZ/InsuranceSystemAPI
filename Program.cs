@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using InsuranceSystemAPI.Data;
 using InsuranceSystemAPI.Services;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,9 @@ builder.Services.AddControllers()
 
 // Database configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 30));
 builder.Services.AddDbContext<InsuranceDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, serverVersion));
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -137,11 +139,18 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Ensure database is created
+// Ensure database is created (tolerate startup failures to allow API to boot)
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<InsuranceDbContext>();
-    context.Database.Migrate();
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<InsuranceDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Database migration failed at startup; API will continue to run.");
+    }
 }
 
 app.Run();
